@@ -1,5 +1,6 @@
 package gred.nucleus.core;
 
+import gred.nucleus.utils.Histogram;
 import ij.*;
 import ij.plugin.Resizer;
 import ij.process.*;
@@ -12,6 +13,7 @@ public class OtherNucleusSegmentation
 	public OtherNucleusSegmentation (){	}
 	
 	/**
+	 * 
 	 * 
 	 * @param imagePlusInput
 	 * @return
@@ -36,18 +38,66 @@ public class OtherNucleusSegmentation
 		final double yCalibration = calibration.pixelHeight;
 		final double zCalibration = calibration.pixelDepth;
 	
+		
 		// 1 Otsu => image binaire => rescale
-		ImagePlus imagePlusSegmentedRescale = resizeImage(generateSegmentedImage (imagePlusInput, computeThreshold(imagePlusInput)));
+		ImagePlus imagePlusSegmented = generateSegmentedImage (imagePlusInput, computeThreshold(imagePlusInput));
+		ImagePlus imagePlusOutput = imagePlusSegmented.duplicate();
+		ImagePlus imagePlusSegmentedRescale = resizeImage(imagePlusSegmented);
 		//2 DistanceMap
 		RadialDistance radialDistance = new RadialDistance();
-		ImagePlus ImagePlusDistanceMap = radialDistance.computeDistanceMap(imagePlusSegmentedRescale);
+		ImagePlus imagePlusDistanceMap = radialDistance.computeDistanceMap(imagePlusSegmentedRescale);
+		imagePlusDistanceMap.setTitle("dM");
+		imagePlusDistanceMap.show();
 		// DistanceMap thresholding???? => seuillage en soit facil, mais comment faire qqch de cohérent?
+		Histogram histogram = new Histogram();
+		histogram.run(imagePlusSegmentedRescale);
+		double s_threshold = 1;
+		ImageStack imageStackSegmentedRescale = imagePlusSegmentedRescale.getStack();
+		ImageStack imageStackOutput = imagePlusOutput.getStack();
+		for (int k = 0; k < imagePlusSegmentedRescale.getNSlices(); ++k)
+			for (int i = 0; i < imagePlusSegmentedRescale.getWidth(); ++i)
+				for (int j = 0; j < imagePlusSegmentedRescale.getHeight(); ++j)
+				{
+					double voxelValue =  imageStackSegmentedRescale.getVoxel(i, j, k); 
+					if (voxelValue >= s_threshold)
+					{
+						
+						int inf_k = (int)(float)(k*(xCalibration/zCalibration)-s_threshold);
+						if (inf_k < 0) inf_k=0; 
+						int sup_k = (int)(float)(k*(xCalibration/zCalibration)+s_threshold);
+						if (sup_k > imagePlusSegmented.getNSlices()) sup_k = imagePlusSegmented.getNSlices();
+						int inf_i = (int)(float)(i-s_threshold);
+						if (inf_i < 0) inf_i=0; 
+						int sup_i = (int)(float)(i+s_threshold);
+						if (sup_i > imagePlusSegmented.getWidth()) sup_i = imagePlusSegmented.getWidth();
+						int inf_j = (int)(float)(j-s_threshold);
+						if (inf_j < 0) inf_j=0; 
+						int sup_j = (int)(float)(j+s_threshold);
+						if (sup_j > imagePlusSegmented.getHeight()) sup_j = imagePlusSegmented.getHeight();
+						IJ.log("plop"+inf_k+" "+ inf_j+" "+ inf_i );
+						for (int kk = inf_k; kk < sup_k ; ++kk)
+							for (int ii =  inf_i; ii < sup_i; ++ii)
+								for (int jj =  inf_j; jj < sup_j; ++jj)
+								{
+									
+									if (imageStackOutput.getVoxel(ii,jj,kk) == 0)
+										{	
+											
+											imageStackOutput.setVoxel(ii,jj,kk,255);
+										}
+								}
+					}
+				}
+					
 		
 		//Def de la boule => faire une methode... Comment fait on pour faire une matrice definissant une boule? comment en tenir compte?
 		
 		// Aprés faut ballader la boule sur le deep kernel => Si voxel = 0 le passer a 255
 		// rescle l'image en mode 0.103*0.103*0.2 => faisable
-		return ImagePlusDistanceMap;
+		imagePlusSegmented.setTitle("otsu");
+		imagePlusSegmented.show();
+	    imagePlusOutput.setTitle("plop");
+		return imagePlusOutput;
 	}
 	
 	/**
@@ -98,4 +148,10 @@ public class OtherNucleusSegmentation
 				}
 		return imagePlusSegmented;
 	}
+	
+	/**
+	 * 
+	 * 
+	 */
+	
 }
