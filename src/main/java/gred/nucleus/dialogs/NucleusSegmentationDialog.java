@@ -107,7 +107,7 @@ public class NucleusSegmentationDialog  extends JFrame
 				new Insets(20, 60, 0, 0), 0, 0
 			)
 		);
-		_jTextFieldXCalibration.setText("1");
+		_jTextFieldXCalibration.setText("0.103");
 		_jTextFieldXCalibration.setPreferredSize(new java.awt.Dimension(60, 21));
 		
 		_jLabelYcalibration = new JLabel();
@@ -135,7 +135,7 @@ public class NucleusSegmentationDialog  extends JFrame
 				new Insets(45, 60, 0, 0), 0, 0
 			)
 		);
-		_jTextFieldYCalibration.setText("1");
+		_jTextFieldYCalibration.setText("0.103");
 		_jTextFieldYCalibration.setPreferredSize(new java.awt.Dimension(60, 21));
 		
 		_jLabelZcalibration = new JLabel();
@@ -163,7 +163,7 @@ public class NucleusSegmentationDialog  extends JFrame
 				new Insets(70, 60, 0, 0), 0, 0
 			)
 		);
-		_jTextFieldZCalibration.setText("1");
+		_jTextFieldZCalibration.setText("0.2");
 		_jTextFieldZCalibration.setPreferredSize(new java.awt.Dimension(60, 21));	 
 		
 		_jLabelUnit = new JLabel();
